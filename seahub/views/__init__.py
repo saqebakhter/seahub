@@ -906,8 +906,17 @@ def myhome(request):
     calculate_repos_last_modify(owned_repos)
     owned_repos.sort(lambda x, y: cmp(y.latest_modify, x.latest_modify))
 
-    # Personal repos others shared to me
-    in_repos = list_personal_shared_repos(username, 'to_email', -1, -1)
+    # Repos and files others share to me
+    personal_shared_repos = list_personal_shared_repos(username, 'to_email',
+                                                       -1, -1)
+    personal_shared_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
+
+    priv_share_in_files = PrivateFileDirShare.objects.list_private_share_in_by_user(username)
+    for e in priv_share_in_files:
+        e.file_or_dir = os.path.basename(e.path.rstrip('/'))
+        e.repo = seafile_api.get_repo(e.repo_id)
+
+    group_repos = []
     # For each group I joined... 
     for grp in joined_groups:
         # Get group repos, and for each group repos...
@@ -927,17 +936,15 @@ def myhome(request):
             r.share_type = 'group'
             r.user = get_repo_owner(r_id)
             r.user_perm = check_permission(r_id, username)
-            in_repos.append(r)
-    in_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
+            r.group = grp
+            group_repos.append(r)
+    group_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
  
 
     autocomp_groups = joined_groups
     contacts = Contact.objects.get_contacts_by_user(username)
 
     allow_public_share = False if request.cloud_mode else True
-
-    starred_files = UserStarredFiles.objects.get_starred_files_by_username(
-        username)
 
     # user guide
     need_guide = False
@@ -953,20 +960,35 @@ def myhome(request):
             
     return render_to_response('myhome.html', {
             "owned_repos": owned_repos,
-            "in_repos": in_repos,
+            "group_repos": group_repos,
+            "personal_shared_repos": personal_shared_repos,
             "contacts": contacts,
             "autocomp_groups": autocomp_groups,
             "joined_groups": joined_groups,
             "create_shared_repo": False,
             "allow_public_share": allow_public_share,
-            "starred_files": starred_files,
             "ENABLE_SUB_LIBRARY": ENABLE_SUB_LIBRARY,
             "need_guide": need_guide,
             "sub_lib_enabled": sub_lib_enabled,
             "sub_repos": sub_repos,
             "repo_create_url": repo_create_url,
+            "priv_share_in_files": priv_share_in_files,
             }, context_instance=RequestContext(request))
 
+@login_required
+def stars(request):
+    """List starred files.
+    
+    Arguments:
+    - `request`:
+    """
+    username = request.user.username
+    starred_files = UserStarredFiles.objects.get_starred_files_by_username(
+        username)
+
+    return render_to_response('stars.html', {
+            "starred_files": starred_files,
+            }, context_instance=RequestContext(request))
 
 @login_required
 def client_mgmt(request):
@@ -1992,3 +2014,4 @@ def toggle_modules(request):
 
     return HttpResponseRedirect(next)
 
+    
