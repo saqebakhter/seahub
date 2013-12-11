@@ -875,12 +875,7 @@ def modify_token(request, repo_id):
 
 @login_required
 def myhome(request):
-    owned_repos = []
-
     username = request.user.username
-
-    # Get all personal groups I joined.
-    joined_groups = get_personal_groups_by_user(username)
 
     def get_abbrev_origin_path(repo_name, path):
         if len(path) > 20:
@@ -900,23 +895,27 @@ def myhome(request):
         calculate_repos_last_modify(sub_repos)
         sub_repos.sort(lambda x, y: cmp(y.latest_modify, x.latest_modify))
 
-    # Personal repos that I owned.
-    owned_repos = seafserv_threaded_rpc.list_owned_repos(username)
+    # mine
+    owned_repos = seafile_api.get_owned_repo_list(username)
     calculate_repos_last_modify(owned_repos)
     owned_repos.sort(lambda x, y: cmp(y.latest_modify, x.latest_modify))
 
-    # Repos and files others share to me
+    # shared
     personal_shared_repos = list_personal_shared_repos(username, 'to_email',
                                                        -1, -1)
     personal_shared_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
 
+    # group repos
     group_repos = []
+    # Get all personal groups I joined.
+    joined_groups = get_personal_groups_by_user(username)
     # For each group I joined... 
     for grp in joined_groups:
         # Get group repos, and for each group repos...
         for r_id in get_group_repoids(grp.id):
             # No need to list my own repo
-            if is_repo_owner(username, r_id):
+            repo_owner = seafile_api.get_repo_owner(r_id)
+            if repo_owner == username:
                 continue
             # Convert repo properties due to the different collumns in Repo
             # and SharedRepo
@@ -928,12 +927,13 @@ def myhome(request):
             r.repo_desc = r.desc
             r.last_modified = get_repo_last_modify(r)
             r.share_type = 'group'
-            r.user = get_repo_owner(r_id)
+            r.user = repo_owner
             r.user_perm = check_permission(r_id, username)
             r.group = grp
             group_repos.append(r)
-    group_repos.sort(lambda x, y: cmp(y.group.group_name, x.group.group_name))
+    group_repos.sort(key=lambda x: x.group.group_name)
 
+    # misc
     autocomp_groups = joined_groups
     contacts = Contact.objects.get_contacts_by_user(username)
     allow_public_share = False if request.cloud_mode else True
