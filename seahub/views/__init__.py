@@ -933,11 +933,6 @@ def myhome(request):
             r.group = grp
             group_repos.append(r)
     group_repos.sort(lambda x, y: cmp(y.group.group_name, x.group.group_name))
-    for i, repo in enumerate(group_repos):
-        print i, repo.group.group_name
-    # for i, repo in enumerate(group_repos):
-    #     if i > 0 and repo.group.group_name == group_repos[i-1].group.group_name:
-    #         repo.group.group_name = ''
 
     autocomp_groups = joined_groups
     contacts = Contact.objects.get_contacts_by_user(username)
