@@ -1,5 +1,5 @@
-{% load seahub_tags i18n %}
-{% load url from future %}
+{% load seahub_tags group_avatar_tags i18n %}
+
 <div id="tabs" class="tab-tabs">
 <div class="hd ovhd">
     <ul class="tab-tabs-nav fleft">
@@ -147,19 +147,6 @@
         </tr>
         {% endfor %}
 
-        {% for e in priv_share_in_files %}
-        <tr>
-          <td class="alc"><img src="{{ MEDIA_URL }}img/file/{{ e.file_or_dir|file_icon_filter }}" alt="" /></td>
-          <td><a href="{% url 'view_priv_shared_file' e.token %}?p={{ e.path|urlencode}}">{{e.file_or_dir}}</a></td>
-          <td>--</td>
-          <td>--</td>
-          <td>{{e.from_user|email2nickname}}</td>
-          <td>
-            <span data-url="{% url 'rm_private_file_share' e.token %}" class="icon-trash unshare-btn op-icon vh" title="{% trans "Unshare" %}"></span>
-          </td>
-        </tr>
-        {% endfor%}
-
     </table>
     {% else %}
     <div class="empty-tips">
@@ -174,15 +161,18 @@
     <table>
         <tr>
             <th width="4%"><!--icon--></th>
+            <th width="13%">{% trans "Group" %}</th>
+            <th width="4%"><!--icon--></th>
             <th width="20%">{% trans "Name" %}</th>
-            <th width="33%">{% trans "Description" %}</th>
+            <th width="29%">{% trans "Description" %}</th>
             <th width="15%">{% trans "Last Update" %}</th>
             <th width="15%">{% trans "Shared By" %}</th>
-            <th width="13%">{% trans "Group" %}</th>
         </tr>
 
         {% for repo in group_repos %}
         <tr>
+            <td>{% grp_avatar repo.group.id 20 %}</td>
+            <td><a href="{% url 'group_info' repo.group.id%}">{{ repo.group.group_name }}</a></td>
             <td>
                 {% if repo.user_perm == 'rw' %}
                 <img src="{{MEDIA_URL}}img/sync-folder-20.png" title="{% trans "Read-Write" %}" alt="{% trans "directory icon" %}" />
@@ -198,7 +188,6 @@
             <td>--</td>
             {% endif %}
             <td>{{ repo.user|email2nickname }}</td>
-            <td><a href="{% url 'group_info' repo.group.id%}">{{ repo.group.group_name }}</a></td>
         </tr>
         {% endfor %}
     </table>

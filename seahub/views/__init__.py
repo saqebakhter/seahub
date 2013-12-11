@@ -890,7 +890,6 @@ def myhome(request):
             return repo_name + path
 
     # compose abbrev origin path for display
-
     sub_repos = []
     sub_lib_enabled = UserOptions.objects.is_sub_lib_enabled(username)
     if ENABLE_SUB_LIBRARY and sub_lib_enabled:
@@ -910,11 +909,6 @@ def myhome(request):
     personal_shared_repos = list_personal_shared_repos(username, 'to_email',
                                                        -1, -1)
     personal_shared_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
-
-    priv_share_in_files = PrivateFileDirShare.objects.list_private_share_in_by_user(username)
-    for e in priv_share_in_files:
-        e.file_or_dir = os.path.basename(e.path.rstrip('/'))
-        e.repo = seafile_api.get_repo(e.repo_id)
 
     group_repos = []
     # For each group I joined... 
@@ -938,12 +932,15 @@ def myhome(request):
             r.user_perm = check_permission(r_id, username)
             r.group = grp
             group_repos.append(r)
-    group_repos.sort(lambda x, y: cmp(y.last_modified, x.last_modified))
- 
+    group_repos.sort(lambda x, y: cmp(y.group.group_name, x.group.group_name))
+    for i, repo in enumerate(group_repos):
+        print i, repo.group.group_name
+    # for i, repo in enumerate(group_repos):
+    #     if i > 0 and repo.group.group_name == group_repos[i-1].group.group_name:
+    #         repo.group.group_name = ''
 
     autocomp_groups = joined_groups
     contacts = Contact.objects.get_contacts_by_user(username)
-
     allow_public_share = False if request.cloud_mode else True
 
     # user guide
@@ -972,11 +969,10 @@ def myhome(request):
             "sub_lib_enabled": sub_lib_enabled,
             "sub_repos": sub_repos,
             "repo_create_url": repo_create_url,
-            "priv_share_in_files": priv_share_in_files,
             }, context_instance=RequestContext(request))
 
 @login_required
-def stars(request):
+def starred(request):
     """List starred files.
     
     Arguments:
@@ -986,7 +982,7 @@ def stars(request):
     starred_files = UserStarredFiles.objects.get_starred_files_by_username(
         username)
 
-    return render_to_response('stars.html', {
+    return render_to_response('starred.html', {
             "starred_files": starred_files,
             }, context_instance=RequestContext(request))
 
