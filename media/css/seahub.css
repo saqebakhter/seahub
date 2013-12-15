@@ -2108,6 +2108,14 @@ textarea:-moz-placeholder {/* for FF */
     background:transparent;
     height:auto;
 }
+#short-shared-link,
+#short-shared-link-text {
+    border:0;
+}
+#short-shared-link-text {
+    background:transparent;
+    height:auto;
+}
 .file-op {
     margin-top:0.8em;
 }

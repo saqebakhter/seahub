@@ -9,6 +9,7 @@ import json
 import tempfile
 import locale
 import ConfigParser
+import googl
 from datetime import datetime
 from urlparse import urlparse
 
@@ -831,9 +832,12 @@ def gen_shared_link(token, s_type):
 
     service_url = service_url.rstrip('/')
     if s_type == 'f':
-        return '%s/f/%s/' % (service_url, token)
+        longUrl = '%s/f/%s/' % (service_url, token)
     else:
-        return '%s/d/%s/' % (service_url, token)
+        longUrl = '%s/d/%s/' % (service_url, token)
+    
+    shortUrl = googl.short(longUrl)
+    return longUrl, shortUrl
 
 def show_delete_days(request):
     if request.method == 'GET':

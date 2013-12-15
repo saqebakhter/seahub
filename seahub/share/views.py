@@ -591,9 +591,9 @@ def get_shared_link(request):
             data = json.dumps({'error': err})
             return HttpResponse(data, status=500, content_type=content_type)
 
-    shared_link = gen_shared_link(token, fs.s_type)
+    shared_link, short_shared_link = gen_shared_link(token, fs.s_type)
 
-    data = json.dumps({'token': token, 'shared_link': shared_link})
+    data = json.dumps({'token': token, 'shared_link': shared_link, 'short_shared_link':short_shared_link})
     return HttpResponse(data, status=200, content_type=content_type)
 
 @login_required
