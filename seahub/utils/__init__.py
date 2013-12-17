@@ -836,7 +836,8 @@ def gen_shared_link(token, s_type):
     else:
         longUrl = '%s/d/%s/' % (service_url, token)
     
-    shortUrl = ''
+    c = yourls.client.YourlsClient('http://mnfs.cisco.com/u/yourls-api.php', username='yourls', password='yourls')
+    shortUrl = c.shorten(longUrl)
     return longUrl, shortUrl
 
 def show_delete_days(request):
