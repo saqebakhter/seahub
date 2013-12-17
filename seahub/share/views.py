@@ -23,6 +23,7 @@ from seaserv import seafserv_threaded_rpc, ccnet_rpc, \
     del_org_group_repo, list_share_repos, get_group_repos_by_owner, \
     list_inner_pub_repos_by_owner, remove_share
 
+import yourls.client
 from forms import RepoShareForm, FileLinkShareForm
 from models import AnonymousShare, FileShare, PrivateFileDirShare
 from signals import share_repo_to_user_successful
@@ -591,7 +592,9 @@ def get_shared_link(request):
             data = json.dumps({'error': err})
             return HttpResponse(data, status=500, content_type=content_type)
 
-    shared_link, short_shared_link = gen_shared_link(token, fs.s_type)
+    shared_link = gen_shared_link(token, fs.s_type)
+    c = yourls.client.YourlsClient('http://mnfs.cisco.com/u/yourls-api.php', username='yourls', password='yourls')
+    short_shared_link = c.shorten(shared_link)    
 
     data = json.dumps({'token': token, 'shared_link': shared_link, 'short_shared_link':short_shared_link})
     return HttpResponse(data, status=200, content_type=content_type)

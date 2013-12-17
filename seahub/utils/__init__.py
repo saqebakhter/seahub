@@ -9,7 +9,6 @@ import json
 import tempfile
 import locale
 import ConfigParser
-import yourls.client
 from datetime import datetime
 from urlparse import urlparse
 
@@ -836,9 +835,7 @@ def gen_shared_link(token, s_type):
     else:
         longUrl = '%s/d/%s/' % (service_url, token)
     
-    c = yourls.client.YourlsClient('http://mnfs.cisco.com/u/yourls-api.php', username='yourls', password='yourls')
-    shortUrl = c.shorten(longUrl)
-    return longUrl, shortUrl
+    return longUrl
 
 def show_delete_days(request):
     if request.method == 'GET':
