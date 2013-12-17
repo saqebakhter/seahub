@@ -594,7 +594,7 @@ def get_shared_link(request):
 
     shared_link = gen_shared_link(token, fs.s_type)
     c = yourls.client.YourlsClient('http://mnfs.cisco.com/u/yourls-api.php', username='yourls', password='yourls')
-    short_shared_link = c.shorten(shared_link)    
+    short_shared_link = c.shorten(shared_link, title=path)    
 
     data = json.dumps({'token': token, 'shared_link': shared_link, 'short_shared_link':short_shared_link})
     return HttpResponse(data, status=200, content_type=content_type)
